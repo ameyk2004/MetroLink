@@ -1,0 +1,57 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<h1 style="margin-bottom:20px;">Admin Dashboard</h1>
+
+<div class="admin-grid">
+
+    <a class="admin-card" href="/admin/users">
+        <i class="ri-user-settings-line"></i>
+        <p>Manage Users</p>
+    </a>
+
+    <a class="admin-card" href="/admin/lines">
+        <i class="ri-route-line"></i>
+        <p>Manage Metro Lines</p>
+    </a>
+
+    <a class="admin-card" href="/admin/stops">
+        <i class="ri-map-pin-line"></i>
+        <p>Manage Stops</p>
+    </a>
+
+    <a class="admin-card" href="/admin/schedule">
+        <i class="ri-timer-flash-line"></i>
+        <p>Train Schedule</p>
+    </a>
+
+</div>
+
+<style>
+.admin-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 280px);
+    gap: 25px;
+}
+.admin-card {
+    background: rgba(59,130,246,0.15);
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    text-decoration: none;
+    color: white;
+    font-size: 18px;
+    transition: .3s;
+}
+.admin-card i {
+    font-size: 40px;
+    margin-bottom: 10px;
+    color: #60a5fa;
+}
+.admin-card:hover {
+    background: rgba(59,130,246,0.3);
+    transform: translateY(-5px);
+}
+</style>
+
+{% endblock %}

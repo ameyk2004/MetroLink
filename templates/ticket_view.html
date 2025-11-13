@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h1 class="page-title">Your Ticket</h1>
+
+<div class="ticket-wrapper">
+
+    <!-- MAIN TICKET CARD -->
+    <div class="ticket-card">
+
+        <!-- HEADER -->
+        <div class="ticket-header">
+            <h2><i class="ri-train-line"></i> MetroLink Digital Ticket</h2>
+            <span class="ticket-id">TICKET #{{ ticket.ticket_id }}</span>
+        </div>
+
+        <div class="ticket-body">
+
+            <!-- LEFT SIDE INFO -->
+            <div class="ticket-info">
+                
+                <h3 class="trip-heading">Journey Details</h3>
+
+                <div class="info-row">
+                    <span>Line:</span>
+                    <strong>{{ ticket.line_name }}</strong>
+                </div>
+
+                <div class="info-row">
+                    <span>From:</span>
+                    <strong>{{ ticket.from_name }}</strong>
+                </div>
+
+                <div class="info-row">
+                    <span>To:</span>
+                    <strong>{{ ticket.to_name }}</strong>
+                </div>
+
+                <div class="info-row">
+                    <span>Date & Time:</span>
+                    <strong>{{ ticket.travel_date }}</strong>
+                </div>
+
+                <div class="info-row">
+                    <span>Fare:</span>
+                    <strong>₹{{ ticket.fare }}</strong>
+                </div>
+
+                <div class="info-row">
+                    <span>Pass Used:</span>
+                    <strong>{{ "Yes" if ticket.use_pass == "Y" else "No" }}</strong>
+                </div>
+            </div>
+
+            <!-- RIGHT SIDE QR CODE -->
+            <div class="qr-section">
+                <img src="{{ qr_img }}" alt="QR Code Ticket">
+                <p class="qr-text">Scan this QR at the station gate</p>
+            </div>
+
+        </div>
+
+        <!-- FOOTER -->
+        <div class="ticket-footer">
+            <p>Thank you for travelling with MetroLink</p>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

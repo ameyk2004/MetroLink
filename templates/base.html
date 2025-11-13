@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>MetroLink – Smart Metro Ticketing System</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css" />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+
+    <style>
+        body {
+            background: #0f172a;
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        /* NAVBAR ------------------------------------------------------- */
+        .navbar {
+            width: 100%;
+            background: rgba(30, 58, 138, 0.7);
+            backdrop-filter: blur(12px);
+            padding: 18px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+            border-bottom: 1px solid rgba(96, 165, 250, 0.3);
+        }
+
+        .logo {
+            font-size: 26px;
+            font-weight: 700;
+            color: #60a5fa;
+            text-decoration: none;
+            letter-spacing: 1.5px;
+        }
+
+        .logo span {
+            color: #3b82f6;
+        }
+
+        .nav-right a {
+            margin-left: 22px;
+            color: #cbd5e1;
+            text-decoration: none;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+
+        .nav-right a:hover {
+            color: #60a5fa;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            padding: 10px 18px;
+            border-radius: 8px;
+            color: white !important;
+            text-decoration: none;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0px 0px 15px #3b82f6;
+            transform: translateY(-2px);
+        }
+
+        .logout-btn {
+            color: #fca5a5 !important;
+            font-weight: 500;
+        }
+
+        /* PAGE CONTAINER ------------------------------------------------------- */
+        .content {
+            padding: 50px 60px;
+            min-height: 90vh;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* GLOW BACKGROUND ------------------------------------------------------- */
+        .glow-circle {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.6;
+            z-index: 0;
+        }
+
+        .circle-blue-1 {
+            width: 380px;
+            height: 380px;
+            background: #1d4ed8;
+            top: -80px;
+            left: -80px;
+        }
+
+        .circle-blue-2 {
+            width: 420px;
+            height: 420px;
+            background: #3b82f6;
+            bottom: -120px;
+            right: -120px;
+        }
+
+        .flash-msg {
+            padding: 15px 20px;
+            background: rgba(59, 130, 246, 0.2);
+            border-left: 5px solid #3b82f6;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Glow Background Circles -->
+    <div class="glow-circle circle-blue-1"></div>
+    <div class="glow-circle circle-blue-2"></div>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+    <a href="/" class="logo">METRO<span>LINK</span></a>
+
+    <div class="nav-right">
+
+        {% if current_user.is_authenticated %}
+
+            {% if current_user.role_name == "admin" %}
+                <!-- ADMIN NAVBAR -->
+                <a href="/admin"><i class="ri-admin-line"></i> Admin Dashboard</a>
+                <a href="/admin/users"><i class="ri-user-settings-line"></i> Users</a>
+                <a href="/admin/lines"><i class="ri-route-line"></i> Lines</a>
+                <a href="/admin/stops"><i class="ri-map-pin-line"></i> Stops</a>
+                <a href="/admin/schedule"><i class="ri-timer-flash-line"></i> Schedule</a>
+
+                <!-- LOGOUT -->
+                <a href="/logout" class="logout-btn">
+                    <i class="ri-logout-box-r-line"></i> Logout
+                </a>
+
+            {% else %}
+                <!-- USER NAVBAR -->
+                <a href="/dashboard"><i class="ri-speed-up-line"></i> Dashboard</a>
+                <a href="/buy_pass"><i class="ri-wallet-3-line"></i> Buy Pass</a>
+                <a href="/book_ticket"><i class="ri-ticket-2-line"></i> Book Ticket</a>
+                <a href="/dashboard#passes"><i class="ri-bank-card-line"></i> My Passes</a>
+                <a href="/dashboard#tickets"><i class="ri-time-line"></i> My Tickets</a>
+
+                <!-- LOGOUT -->
+                <a href="/logout" class="logout-btn">
+                    <i class="ri-logout-box-r-line"></i> Logout
+                </a>
+            {% endif %}
+
+        {% else %}
+            <!-- NOT LOGGED IN -->
+            <a href="/login"><i class="ri-login-circle-line"></i> Login</a>
+            <a href="/register" class="btn-primary"><i class="ri-user-add-line"></i> Register</a>
+        {% endif %}
+
+    </div>
+</nav>
+
+
+    <!-- Flash Messages -->
+    <div class="content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, msg in messages %}
+        <div class="flash-msg">{{ msg }}</div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        {% block content %}
+        {% endblock %}
+    </div>
+
+</body>
+
+</html>

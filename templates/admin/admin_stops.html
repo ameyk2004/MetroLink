@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<h1>Manage Stops</h1>
+
+<form method="POST" style="margin:20px 0;">
+    <input type="text" name="stop_name" placeholder="Stop Name" required>
+    <select name="line_id" required>
+        {% for l in lines %}
+        <option value="{{ l.line_id }}">{{ l.line_name }}</option>
+        {% endfor %}
+    </select>
+    <input type="number" name="stop_order" placeholder="Order" required>
+    <button class="btn-primary" type="submit">Add Stop</button>
+</form>
+
+<table class="admin-table">
+    <tr>
+        <th>ID</th>
+        <th>Stop Name</th>
+        <th>Line</th>
+        <th>Order</th>
+    </tr>
+
+    {% for s in stops %}
+    <tr>
+        <td>{{ s.stop_id }}</td>
+        <td>{{ s.stop_name }}</td>
+        <td>{{ s.line_name }}</td>
+        <td>{{ s.stop_order }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<style>
+select, input {
+    padding: 10px;
+    margin-right: 10px;
+    border-radius: 5px;
+    border: none;
+}
+</style>
+
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h1>Manage Metro Lines</h1>
+
+<form method="POST" style="margin-top:20px;">
+    <input type="text" name="line_name" placeholder="Enter new line name" required>
+    <button class="btn-primary" type="submit">Add Line</button>
+</form>
+
+<table class="admin-table">
+    <tr>
+        <th>ID</th>
+        <th>Line Name</th>
+    </tr>
+
+    {% for line in lines %}
+    <tr>
+        <td>{{ line.line_id }}</td>
+        <td>{{ line.line_name }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<style>
+input {
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    margin-right: 10px;
+}
+</style>
+
+{% endblock %}

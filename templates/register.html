@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="auth-container">
+
+    <div class="auth-card">
+
+        <h2 class="auth-title">Create Your Account</h2>
+        <p class="auth-subtitle">Join MetroLink and travel smarter</p>
+
+        <form method="POST" class="auth-form">
+
+            <!-- FULL NAME -->
+            <div class="input-group">
+                <i class="ri-user-3-line"></i>
+                <input type="text" name="name" placeholder="Full Name" required>
+            </div>
+
+            <!-- EMAIL -->
+            <div class="input-group">
+                <i class="ri-mail-line"></i>
+                <input type="email" name="email" placeholder="Email Address" required>
+            </div>
+
+            <!-- PASSWORD -->
+            <div class="input-group">
+                <i class="ri-lock-2-line"></i>
+                <input type="password" name="password" placeholder="Password" required>
+            </div>
+
+            <button class="btn-blue full-btn" type="submit">
+                <i class="ri-user-add-line"></i> Register
+            </button>
+
+        </form>
+
+        <p class="auth-footer">
+            Already have an account?
+            <a href="/login">Login here</a>
+        </p>
+    </div>
+
+    <!-- Floating Illustration -->
+    <div class="auth-side">
+        <img src="{{ url_for('static', filename='signup-train.png') }}" alt="Metro Train Illustration">
+    </div>
+
+</div>
+
+{% endblock %}

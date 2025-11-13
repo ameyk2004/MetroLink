@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- HERO SECTION -->
+<section class="hero">
+    <div class="hero-left">
+        <h1>Welcome to <span>MetroLink</span></h1>
+        <p>Your fast, secure and modern metro ticketing system. Book tickets, manage passes and travel smarter.</p>
+
+        <div class="hero-buttons">
+            <a href="/login" class="btn-blue">Login</a>
+            <a href="/register" class="btn-outline">Register</a>
+        </div>
+    </div>
+
+    <div class="hero-right">
+        <img src="{{ url_for('static', filename='train.png') }}" alt="Metro Train">
+    </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features">
+    <div class="feature-card">
+        <i class="ri-ticket-line"></i>
+        <h3>Quick Ticket Booking</h3>
+        <p>Book metro tickets instantly with smart fare calculation and QR generation.</p>
+    </div>
+
+    <div class="feature-card">
+        <i class="ri-pass-valid-line"></i>
+        <h3>Smart Pass System</h3>
+        <p>Recharge, manage and track your metro passes in one place.</p>
+    </div>
+
+    <div class="feature-card">
+        <i class="ri-shield-check-line"></i>
+        <h3>Secure Login</h3>
+        <p>Enjoy safe authentication through encrypted session management.</p>
+    </div>
+</section>
+
+{% endblock %}

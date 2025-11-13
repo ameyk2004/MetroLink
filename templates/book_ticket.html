@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h1 class="page-title">Book Your Metro Ticket</h1>
+
+<div class="form-wrapper">
+
+    <div class="form-card">
+
+        <h2 class="form-title">
+            <i class="ri-ticket-2-line"></i> Ticket Booking
+        </h2>
+        <p class="form-subtitle">Choose a line → stops → train timing</p>
+
+        <form method="POST" class="metro-form">
+
+            <!-- LINE SELECTION -->
+            <label class="form-label">Metro Line</label>
+            <div class="input-group">
+                <i class="ri-route-line"></i>
+                <select name="line_id" id="lineSelect" required>
+                    <option value="">Select Line</option>
+                    {% for l in lines %}
+                    <option value="{{ l.line_id }}">{{ l.line_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- FROM STOP -->
+            <label class="form-label">From Stop</label>
+            <div class="input-group">
+                <i class="ri-map-pin-line"></i>
+                <select name="from_stop" id="fromStop" required>
+                    <option value="">Select Line First</option>
+                </select>
+            </div>
+
+            <!-- TO STOP -->
+            <label class="form-label">To Stop</label>
+            <div class="input-group">
+                <i class="ri-map-pin-2-line"></i>
+                <select name="to_stop" id="toStop" required>
+                    <option value="">Select Line First</option>
+                </select>
+            </div>
+
+            <!-- TRAIN SELECTION (DYNAMIC) -->
+            <div id="trainSection" style="display:none;">
+                <label class="form-label">Available Trains</label>
+
+                <div id="trainList" class="train-list">
+                    <!-- JS will load trains here -->
+                </div>
+            </div>
+
+            <!-- Hidden schedule_id field -->
+            <input type="hidden" name="schedule_id" id="scheduleId">
+
+            <!-- SUBMIT BUTTON -->
+            <button type="submit" class="btn-blue full-btn">
+                <i class="ri-check-double-line"></i> Book Ticket
+            </button>
+
+        </form>
+
+    </div>
+
+    <div class="form-side">
+        <img src="https://static.vecteezy.com/system/resources/thumbnails/049/676/795/small/a-train-is-shown-in-a-flat-design-png.png" alt="Metro Illustration">
+    </div>
+
+</div>
+
+<script>
+    const lineSelect = document.getElementById("lineSelect");
+    const fromStop = document.getElementById("fromStop");
+    const toStop = document.getElementById("toStop");
+    const trainSection = document.getElementById("trainSection");
+    const trainList = document.getElementById("trainList");
+    const scheduleInput = document.getElementById("scheduleId");
+
+    // STEP 1 — Load stops when line changes
+    lineSelect.addEventListener("change", () => {
+        const lineId = lineSelect.value;
+        if (!lineId) return;
+
+        fetch(`/stops/${lineId}`)
+            .then(res => res.json())
+            .then(list => {
+                let opts = `<option value="">Select Stop</option>`;
+                list.forEach(s => {
+                    opts += `<option value="${s.stop_id}">${s.stop_name}</option>`;
+                });
+                fromStop.innerHTML = opts;
+                toStop.innerHTML = opts;
+            });
+
+        // Reset trains
+        trainSection.style.display = "none";
+        trainList.innerHTML = "";
+        scheduleInput.value = "";
+    });
+
+    // STEP 2 — Load next trains when stops change
+    function loadTrains() {
+        const lineId = lineSelect.value;
+        const f = fromStop.value;
+        const t = toStop.value;
+
+        if (!lineId || !f || !t) return;
+
+        if (f === t) {
+            trainSection.style.display = "none";
+            trainList.innerHTML = `<p class="error-text">From & To stops cannot be same.</p>`;
+            return;
+        }
+
+        fetch(`/get_trains?line_id=${lineId}&from_stop=${f}&to_stop=${t}`)
+            .then(res => res.json())
+            .then(data => {
+
+                if (!data.length) {
+                    trainSection.style.display = "block";
+                    trainList.innerHTML = `<p class="error-text">No trains available.</p>`;
+                    return;
+                }
+
+                trainSection.style.display = "block";
+
+                let html = "";
+                data.forEach(tr => {
+                    html += `
+                        <label class="train-option">
+                            <input type="radio" name="train_choice" 
+                                   value="${tr.schedule_id}"
+                                   onclick="scheduleId.value='${tr.schedule_id}'">
+                            <div class="train-card">
+                                <i class="ri-train-line"></i>
+                                <div class="train-info">
+                                    <h4>${tr.departure_time}</h4>
+                                    <p>Direction: ${tr.direction}</p>
+                                </div>
+                            </div>
+                        </label>
+                    `;
+                });
+
+                trainList.innerHTML = html;
+            });
+    }
+
+    fromStop.addEventListener("change", loadTrains);
+    toStop.addEventListener("change", loadTrains);
+</script>
+
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h1 class="page-title">Admin Dashboard</h1>
+
+<div class="admin-wrapper">
+
+    <!-- LEFT PANEL: TICKET HISTORY -->
+    <div class="admin-card">
+
+        <h2 class="admin-title">
+            <i class="ri-file-list-3-line"></i> Ticket History
+        </h2>
+        <p class="admin-sub">All bookings from all passengers</p>
+
+        <div class="table-wrapper">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Line</th>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Date</th>
+                        <th>Fare</th>
+                        <th>Pass</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for t in tickets %}
+                    <tr>
+                        <td>{{ t.user_name }}</td>
+                        <td>{{ t.line_name }}</td>
+                        <td>{{ t.from_stop }}</td>
+                        <td>{{ t.to_stop }}</td>
+                        <td>{{ t.travel_date }}</td>
+                        <td>₹{{ t.fare }}</td>
+                        <td>{{ "Yes" if t.use_pass == "Y" else "No" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+
+    </div>
+
+
+
+    <!-- RIGHT PANEL: CURRENT LOCATION -->
+    <div class="admin-card">
+
+        <h2 class="admin-title">
+            <i class="ri-map-pin-user-line"></i> Current Locations
+        </h2>
+        <p class="admin-sub">Last scanned ticket per user</p>
+
+        <div class="table-wrapper">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Line</th>
+                        <th>Last Stop</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for t in latest %}
+                    <tr>
+                        <td>{{ t.user_name }}</td>
+                        <td>{{ t.line_name }}</td>
+                        <td>{{ t.last_stop }}</td>
+                        <td>{{ t.travel_date }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

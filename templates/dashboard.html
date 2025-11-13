@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h1 class="page-title">Welcome, {{ current_user.name }}</h1>
+
+<div class="dashboard-container">
+
+    <!-- LEFT SIDE: PASSES -->
+    <div class="dash-card">
+        <h2><i class="ri-pass-valid-line"></i> Your Passes</h2>
+
+        {% if passes %}
+            {% for p in passes %}
+                <div class="pass-item">
+                    <h3>{{ p.line_name }}</h3>
+                    <p><strong>Balance:</strong> ₹{{ p.balance }}</p>
+                    <p><strong>Valid:</strong> {{ p.start_date }} → {{ p.end_date }}</p>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="no-data">No passes found.</p>
+        {% endif %}
+
+        <a href="/buy_pass" class="btn-blue small-btn">Buy New Pass</a>
+    </div>
+
+    <!-- RIGHT SIDE: TICKETS -->
+    <div class="dash-card">
+        <h2><i class="ri-ticket-line"></i> Recent Tickets</h2>
+
+        {% if tickets %}
+            {% for t in tickets %}
+                <div class="ticket-item">
+                    <h3>{{ t.from_name }} → {{ t.to_name }}</h3>
+                    <p><strong>Date:</strong> {{ t.travel_date.strftime("%d %b %Y, %I:%M %p") }}</p>
+                    <p><strong>Fare:</strong> ₹{{ t.fare }}</p>
+
+                    {% if t.is_used %}
+                        <span class="ticket-status used">Used</span>
+                    {% else %}
+                        <span class="ticket-status active">Valid</span>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="no-data">No tickets booked yet.</p>
+        {% endif %}
+
+        <a href="/book_ticket" class="btn-blue small-btn">Book Ticket</a>
+    </div>
+
+</div>
+
+{% endblock %}

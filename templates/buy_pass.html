@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h1 class="page-title">Purchase Metro Pass</h1>
+
+<div class="form-wrapper">
+
+    <div class="form-card">
+
+        <h2 class="form-title"><i class="ri-pass-valid-line"></i> Buy New Pass</h2>
+        <p class="form-subtitle">Select a line and recharge amount to continue</p>
+
+        <form method="POST" class="metro-form">
+
+            <!-- SELECT LINE -->
+            <label class="form-label">Metro Line</label>
+            <div class="input-group">
+                <i class="ri-route-line"></i>
+                <select name="line_id" required>
+                    <option value="">Select Line</option>
+                    {% for l in lines %}
+                    <option value="{{ l.line_id }}">{{ l.line_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- AMOUNT -->
+            <label class="form-label">Recharge Amount</label>
+            <div class="input-group">
+                <i class="ri-money-rupee-circle-line"></i>
+                <input type="number" name="amount" min="1" placeholder="Enter amount" required>
+            </div>
+
+            <!-- START DATE -->
+            <label class="form-label">Start Date</label>
+            <div class="input-group">
+                <i class="ri-calendar-event-line"></i>
+                <input type="date" name="start_date" required>
+            </div>
+
+            <!-- SUBMIT -->
+            <button type="submit" class="btn-blue full-btn">
+                <i class="ri-check-double-line"></i> Buy Pass
+            </button>
+
+        </form>
+
+    </div>
+
+    <!-- Illustration -->
+    <div class="form-side">
+        <img src="{{ url_for('static', filename='train_pass.png') }}" alt="Metro Pass Illustration">
+    </div>
+
+</div>
+
+{% endblock %}

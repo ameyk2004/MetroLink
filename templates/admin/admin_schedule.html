@@ -1,0 +1,65 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<h1>Train Schedule</h1>
+
+<form method="POST" style="margin:20px 0;">
+    <!-- Line Selection -->
+    <select name="line_id" required>
+        {% for l in lines %}
+        <option value="{{ l.line_id }}">{{ l.line_name }}</option>
+        {% endfor %}
+    </select>
+
+    <!-- Stop Selection -->
+    <select name="stop_id" required>
+        {% for s in stops %}
+        <option value="{{ s.stop_id }}">{{ s.stop_name }}</option>
+        {% endfor %}
+    </select>
+
+    <!-- Direction -->
+    <select name="direction" required>
+        <option value="UP">UP</option>
+        <option value="DOWN">DOWN</option>
+    </select>
+
+    <!-- Times -->
+    <input type="time" name="arrival_time" required>
+    <input type="time" name="departure_time" required>
+
+    <button class="btn-primary" type="submit">Add</button>
+</form>
+
+<table class="admin-table">
+    <tr>
+        <th>ID</th>
+        <th>Line</th>
+        <th>Stop</th>
+        <th>Direction</th>
+        <th>Arrival</th>
+        <th>Departure</th>
+    </tr>
+
+    {% for t in schedule %}
+    <tr>
+        <td>{{ t.schedule_id }}</td>
+        <td>{{ t.line_name }}</td>
+        <td>{{ t.stop_name }}</td>
+        <td>{{ t.direction }}</td>
+        <td>{{ t.arrival_time }}</td>
+        <td>{{ t.departure_time }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<style>
+select, input {
+    padding: 10px;
+    margin-right: 10px;
+    border-radius: 5px;
+    border: none;
+}
+</style>
+
+{% endblock %}

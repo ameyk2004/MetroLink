@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="auth-container">
+
+    <div class="auth-card">
+
+        <h2 class="auth-title">Login to MetroLink</h2>
+        <p class="auth-subtitle">Enter your credentials to continue</p>
+
+        <form method="POST" class="auth-form">
+
+            <div class="input-group">
+                <i class="ri-mail-line"></i>
+                <input type="email" name="email" placeholder="Email address" required>
+            </div>
+
+            <div class="input-group">
+                <i class="ri-lock-2-line"></i>
+                <input type="password" name="password" placeholder="Password" required>
+            </div>
+
+            <button class="btn-blue full-btn" type="submit">
+                <i class="ri-login-circle-line"></i> Login
+            </button>
+
+        </form>
+
+        <p class="auth-footer">
+            New to MetroLink?
+            <a href="/register">Create an account</a>
+        </p>
+
+    </div>
+
+    <!-- Floating illustration -->
+    <div class="auth-side">
+        <img src="{{ url_for('static', filename='login-train.png') }}" alt="Train Illustration">
+    </div>
+
+</div>
+
+{% endblock %}
