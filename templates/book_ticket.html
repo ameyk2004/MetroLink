@@ -110,8 +110,9 @@
         if (!lineId || !f || !t) return;
 
         if (f === t) {
-            trainSection.style.display = "none";
+            trainSection.style.display = "block";
             trainList.innerHTML = `<p class="error-text">From & To stops cannot be same.</p>`;
+            scheduleInput.value = "";
             return;
         }
 
@@ -122,6 +123,7 @@
                 if (!data.length) {
                     trainSection.style.display = "block";
                     trainList.innerHTML = `<p class="error-text">No trains available.</p>`;
+                    scheduleInput.value = "";
                     return;
                 }
 
@@ -129,16 +131,41 @@
 
                 let html = "";
                 data.forEach(tr => {
+                    const disabled = !tr.can_book;
+                    const optionDisabledClass = disabled ? "train-option-disabled" : "";
+                    const etaClass = tr.eta_status === "On time" ? "eta-on-time" : "eta-late";
+
+                    const capacityInfo = tr.capacity > 0
+                        ? `${tr.booked_seats}/${tr.capacity} seats (${tr.occupancy_percent}%)`
+                        : `Capacity info not available`;
+
                     html += `
-                        <label class="train-option">
-                            <input type="radio" name="train_choice" 
-                                   value="${tr.schedule_id}"
-                                   onclick="scheduleId.value='${tr.schedule_id}'">
+                        <label class="train-option ${optionDisabledClass}">
+                            <input 
+                                type="radio" 
+                                name="train_choice" 
+                                value="${tr.schedule_id}"
+                                ${disabled ? "disabled" : ""}
+                                onclick="document.getElementById('scheduleId').value='${tr.schedule_id}'"
+                            >
                             <div class="train-card">
-                                <i class="ri-train-line"></i>
-                                <div class="train-info">
-                                    <h4>${tr.departure_time}</h4>
-                                    <p>Direction: ${tr.direction}</p>
+                                <div class="train-main">
+                                    <div class="train-icon">
+                                        <i class="ri-train-line"></i>
+                                    </div>
+                                    <div class="train-info">
+                                        <h4 class="train-time">${tr.departure_time}</h4>
+                                        <p class="train-direction">Direction: ${tr.direction}</p>
+                                        <p class="train-eta ${etaClass}">${tr.eta_status}</p>
+                                    </div>
+                                </div>
+                                <div class="train-meta">
+                                    <span class="status-badge status-${tr.occupancy_color}">
+                                        ${tr.occupancy_status}
+                                    </span>
+                                    <span class="capacity-text">
+                                        ${capacityInfo}
+                                    </span>
                                 </div>
                             </div>
                         </label>

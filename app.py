@@ -1,4 +1,3 @@
-# app.py (FINAL FIXED VERSION)
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -221,6 +220,12 @@ def calculate_fare(user_id, s1, s2):
     o1=cur.fetchone()
     cur.execute("SELECT stop_order FROM stops WHERE stop_id=%s",(s2,))
     o2=cur.fetchone()
+
+    # Validate stops
+    if not o1 or not o2:
+        cur.close(); conn.close()
+        return 0  # or raise error / flash in caller
+
     total=abs(o1['stop_order']-o2['stop_order'])
     today=date.today()
     cur.execute("""SELECT COUNT(*) as c FROM passes 
@@ -246,19 +251,48 @@ def book_ticket():
         to_stop = int(request.form['to_stop'])
         schedule_id = int(request.form['schedule_id'])
 
+        # Validate stops
         cur.execute("SELECT line_id, stop_order FROM stops WHERE stop_id=%s", (from_stop,))
         s1 = cur.fetchone()
         cur.execute("SELECT line_id, stop_order FROM stops WHERE stop_id=%s", (to_stop,))
         s2 = cur.fetchone()
 
+        if not s1 or not s2:
+            cur.close(); conn.close()
+            flash("Invalid stops selected", "danger")
+            return redirect(url_for('book_ticket'))
+
         direction = 'UP' if s1['stop_order'] < s2['stop_order'] else 'DOWN'
 
+        # Get the specific train schedule (now includes capacity column in DB)
         cur.execute("""
             SELECT * FROM train_schedule
             WHERE schedule_id=%s AND line_id=%s AND stop_id=%s AND direction=%s
         """, (schedule_id, line_id, from_stop, direction))
         train = cur.fetchone()
 
+        if not train:
+            cur.close(); conn.close()
+            flash("Selected train not found. Please try again.", "danger")
+            return redirect(url_for('book_ticket'))
+
+        # ---- CAPACITY CHECK ----
+        capacity = train.get("capacity") or 0
+        if capacity > 0:
+            cur.execute("""
+                SELECT COUNT(*) AS booked
+                FROM tickets
+                WHERE schedule_id=%s
+            """, (schedule_id,))
+            booked_row = cur.fetchone()
+            booked = booked_row["booked"] if booked_row and booked_row["booked"] is not None else 0
+
+            if booked >= capacity:
+                cur.close(); conn.close()
+                flash("This train is fully booked. Please choose another train.", "danger")
+                return redirect(url_for('book_ticket'))
+
+        # ---- NORMAL BOOKING FLOW ----
         travel_time = mysql_time_to_time(train['departure_time'])
 
         fare = calculate_fare(current_user.user_id, from_stop, to_stop)
@@ -266,7 +300,7 @@ def book_ticket():
         today = date.today()
         travel_dt = datetime.combine(today, travel_time)
 
-        # Pass handling
+        # Pass handling (per line)
         cur.execute("""
             SELECT pass_id, balance FROM passes
             WHERE user_id=%s AND line_id=%s AND start_date<=%s AND end_date>=%s
@@ -280,9 +314,12 @@ def book_ticket():
             newbal = float(p['balance']) - float(fare)
             cur.execute("UPDATE passes SET balance=%s WHERE pass_id=%s", (newbal, p['pass_id']))
 
+        # Store schedule_id on the ticket
         cur.execute("""
-            INSERT INTO tickets(user_id, line_id, from_stop, to_stop, travel_date, fare, use_pass, is_used)
-            VALUES(%s, %s, %s, %s, %s, %s, %s, 0)
+            INSERT INTO tickets(
+                user_id, line_id, from_stop, to_stop, travel_date, fare, use_pass, is_used, schedule_id
+            )
+            VALUES(%s, %s, %s, %s, %s, %s, %s, 0, %s)
         """, (
             current_user.user_id,
             line_id,
@@ -290,7 +327,8 @@ def book_ticket():
             to_stop,
             travel_dt,
             fare,
-            use_pass
+            use_pass,
+            schedule_id
         ))
 
         ticket_id = cur.lastrowid
@@ -336,36 +374,101 @@ def get_trains():
         line_id = int(request.args.get('line_id'))
         from_stop = int(request.args.get('from_stop'))
         to_stop = int(request.args.get('to_stop'))
-    except:
+    except (TypeError, ValueError):
         return jsonify([])
 
     conn = get_conn()
     cur = conn.cursor(dictionary=True)
 
+    # Validate stops
     cur.execute("SELECT stop_order FROM stops WHERE stop_id=%s", (from_stop,))
     s1 = cur.fetchone()
     cur.execute("SELECT stop_order FROM stops WHERE stop_id=%s", (to_stop,))
     s2 = cur.fetchone()
 
+    if not s1 or not s2:
+        cur.close(); conn.close()
+        return jsonify([])
+
     direction = 'UP' if s1['stop_order'] < s2['stop_order'] else 'DOWN'
 
+    # Fetch trains + how many tickets already booked for each schedule
     cur.execute("""
-        SELECT schedule_id, arrival_time, departure_time, direction
-        FROM train_schedule
-        WHERE line_id=%s AND stop_id=%s AND direction=%s
-        ORDER BY departure_time LIMIT 10
+        SELECT 
+            ts.schedule_id,
+            ts.arrival_time,
+            ts.departure_time,
+            ts.direction,
+            ts.capacity,
+            COUNT(t.ticket_id) AS booked_seats
+        FROM train_schedule ts
+        LEFT JOIN tickets t ON t.schedule_id = ts.schedule_id
+        WHERE ts.line_id=%s 
+          AND ts.stop_id=%s 
+          AND ts.direction=%s
+        GROUP BY 
+            ts.schedule_id, ts.arrival_time, ts.departure_time, 
+            ts.direction, ts.capacity
+        ORDER BY ts.departure_time
+        LIMIT 10
     """, (line_id, from_stop, direction))
 
     rows = cur.fetchall()
     cur.close(); conn.close()
 
     result = []
+
     for r in rows:
+        cap = r.get("capacity") or 0
+        booked = r.get("booked_seats") or 0
+
+        pct = 0
+        occupancy_status = "Available"
+        occupancy_color = "green"
+        can_book = True
+
+        if cap > 0:
+            pct = int((booked / cap) * 100)
+
+            # 25 % : Mostly vacant (green)
+            # over 50 % : Filling fast (orange)
+            # 100 % : Filled (booking closed) (grey unselected)
+            if pct <= 25:
+                occupancy_status = "Mostly vacant"
+                occupancy_color = "green"
+            elif pct > 50 and pct < 100:
+                occupancy_status = "Filling fast"
+                occupancy_color = "orange"
+            elif pct >= 100:
+                occupancy_status = "Filled (booking closed)"
+                occupancy_color = "grey"
+                can_book = False
+            else:
+                # 26–50 % range
+                occupancy_status = "Available"
+                occupancy_color = "green"
+
+        # -------- STATIC "RANDOM" ETA STATUS --------
+        # Use schedule_id pattern so it's consistent, not changing every refresh
+        sid = int(r["schedule_id"])
+        if sid % 3 == 0:
+            eta_status = "Running late"
+        else:
+            eta_status = "On time"
+        # (You can tweak: e.g. %4==0 for fewer lates, etc.)
+
         result.append({
             "schedule_id": r["schedule_id"],
             "arrival_time": format_time(r["arrival_time"]),
             "departure_time": format_time(r["departure_time"]),
-            "direction": r["direction"]
+            "direction": r["direction"],
+            "capacity": cap,
+            "booked_seats": booked,
+            "occupancy_percent": pct,
+            "occupancy_status": occupancy_status,
+            "occupancy_color": occupancy_color,  # map this to CSS classes/colors
+            "eta_status": eta_status,            # "On time" / "Running late"
+            "can_book": can_book                 # disable card/button if False
         })
 
     return jsonify(result)
@@ -531,11 +634,12 @@ def admin_schedule():
         direction = request.form["direction"]
         arrival_time = request.form["arrival_time"]
         departure_time = request.form["departure_time"]
+        capacity = request.form.get("capacity", 0)  # you'll need to add this field in the form
 
         cur.execute("""
-            INSERT INTO train_schedule(line_id, stop_id, direction, arrival_time, departure_time)
-            VALUES(%s, %s, %s, %s, %s)
-        """, (line_id, stop_id, direction, arrival_time, departure_time))
+            INSERT INTO train_schedule(line_id, stop_id, direction, arrival_time, departure_time, capacity)
+            VALUES(%s, %s, %s, %s, %s, %s)
+        """, (line_id, stop_id, direction, arrival_time, departure_time, capacity))
 
         conn.commit()
 
@@ -560,6 +664,3 @@ def admin_schedule():
 
 if __name__=="__main__":
     app.run(debug=True)
-    
-# --------------------------------------------------------
-

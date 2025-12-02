@@ -462,29 +462,180 @@ a {
 }
 
 /* ------------------------------------------------------------- */
-/* BOOK TICKET PAGE */
+/* BOOK TICKET PAGE – TRAIN LIST UI                              */
 /* ------------------------------------------------------------- */
 
-.form-card .form-title i {
-    font-size: 26px;
-    color: #60a5fa;
+/* Container for all train options */
+.train-list {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
 }
 
-/* Specific dropdown icon color for clarity */
-#fromStop, #toStop, #lineSelect {
-    cursor: pointer;
+/* Wrapper for each radio + card */
+.train-option {
+    display: block;
 }
 
-#fromStop:hover,
-#toStop:hover,
-#lineSelect:hover {
+/* Hide the default radio button */
+.train-option input[type="radio"] {
+    display: none;
+}
+
+/* Card look for each train */
+.train-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+
+    padding: 0.85rem 1rem;
+    border-radius: 0.85rem;
+
+    border: 1px solid rgba(148, 163, 184, 0.6); /* slate-400-ish */
+    background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.15), transparent 55%),
+                rgba(15, 23, 42, 0.85); /* dark blue background */
+    backdrop-filter: blur(6px);
+
+    transition: border-color 0.18s ease, 
+                box-shadow 0.18s ease,
+                transform 0.18s ease,
+                background 0.18s ease;
+}
+
+/* Hover state */
+.train-option:hover .train-card {
+    border-color: #3b82f6; /* blue-500 */
+    box-shadow: 0 10px 25px rgba(37, 99, 235, 0.25);
+    transform: translateY(-1px);
+}
+
+/* Selected (radio checked) state */
+.train-option input[type="radio"]:checked + .train-card {
     border-color: #3b82f6;
+    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.6),
+                0 12px 30px rgba(37, 99, 235, 0.3);
 }
 
-/* Highlight selection */
-select option {
-    background: #1e3a8a;
-    color: white;
+/* Left side of the card: icon + basic info */
+.train-main {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.train-icon i {
+    font-size: 26px;
+    color: #3b82f6;
+    background: rgba(37, 99, 235, 0.15);
+    border-radius: 999px;
+    padding: 0.55rem;
+}
+
+.train-info h4.train-time {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.train-direction,
+.train-eta {
+    margin: 0.1rem 0 0;
+    font-size: 0.8rem;
+    opacity: 0.9;
+}
+
+/* ETA colors */
+.train-eta.eta-on-time {
+    color: #22c55e; /* green-500 */
+    font-weight: 500;
+}
+
+.train-eta.eta-late {
+    color: #f97316; /* orange-400 */
+    font-weight: 500;
+}
+
+/* Right side of the card: status + capacity info */
+.train-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.3rem;
+    font-size: 0.78rem;
+}
+
+/* Status chips */
+.status-badge {
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.74rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+/* 25% → Mostly vacant */
+.status-green {
+    background: rgba(22, 163, 74, 0.14);
+    color: #22c55e;
+    border: 1px solid rgba(22, 163, 74, 0.7);
+}
+
+/* > 50% → Filling fast */
+.status-orange {
+    background: rgba(234, 88, 12, 0.14);
+    color: #fb923c;
+    border: 1px solid rgba(234, 88, 12, 0.7);
+}
+
+/* 100% → Filled (booking closed) */
+.status-grey {
+    background: rgba(148, 163, 184, 0.18);
+    color: #e5e7eb;
+    border: 1px solid rgba(148, 163, 184, 0.9);
+}
+
+.capacity-text {
+    font-size: 0.76rem;
+    opacity: 0.85;
+}
+
+/* Disabled / fully booked trains */
+.train-option-disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.train-option-disabled .train-card {
+    background: rgba(15, 23, 42, 0.8);
+    border-style: dashed;
+}
+
+.train-option-disabled:hover .train-card {
+    transform: none;
+    box-shadow: none;
+    border-color: rgba(148, 163, 184, 0.6);
+}
+
+/* Error message when no trains / same stop */
+.error-text {
+    color: #f97373;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+/* Small screen tweaks */
+@media (max-width: 640px) {
+    .train-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .train-meta {
+        align-items: flex-start;
+    }
 }
 
 /* ------------------------------------------------------------- */
